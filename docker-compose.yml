@@ -1,0 +1,78 @@
+# IndexBoost Docker Compose
+# PostgreSQL 16 + Redis 7 + API
+
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: indexboost-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: indexboost
+      POSTGRES_PASSWORD: indexboost
+      POSTGRES_DB: indexboost
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U indexboost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: indexboost-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # IndexBoost API (optional - can run locally during dev)
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: indexboost-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://indexboost:indexboost@postgres:5432/indexboost
+      REDIS_URL: redis://redis:6379
+      PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me-in-production-use-openssl-rand-hex-32}
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: indexboost-network
