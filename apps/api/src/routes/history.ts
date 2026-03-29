@@ -47,11 +47,6 @@ export default async function historyRoutes(fastify: FastifyInstance) {
           .offset(offset);
         
         // Get total count for pagination
-        const [countResult] = await db
-          .select({ count: submissions.id })
-          .from(submissions)
-          .where(and(...conditions));
-        
         const total = results.length; // Simplified - in production use COUNT(*)
         
         return reply.code(200).send({

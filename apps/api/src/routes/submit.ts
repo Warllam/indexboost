@@ -17,12 +17,6 @@ const submitSchema = z.object({
 
 type SubmitBody = z.infer<typeof submitSchema>;
 
-interface SubmitResponse {
-  accepted: string[];
-  rejected: Array<{ url: string; reason: string }>;
-  queued: number;
-}
-
 export default async function submitRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/submit

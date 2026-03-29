@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { serviceKeys } from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
-import { encrypt, decrypt, validateServiceAccountJSON } from '../lib/crypto.js';
+import { encrypt, validateServiceAccountJSON } from '../lib/crypto.js';
 
 // POST /api/keys - Add service account
 const addKeySchema = z.object({

@@ -15,7 +15,7 @@ import type { JWTPayload } from '../types/index.js';
  */
 export function verifyToken(token: string): JWTPayload {
   try {
-    const payload = jwt.verify(token, config.jwt.secret, {
+    const payload = jwt.verify(token, config.JWT_SECRET, {
       algorithms: ['HS256'],
     }) as JWTPayload;
     

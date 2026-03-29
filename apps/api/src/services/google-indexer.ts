@@ -8,11 +8,10 @@
  * - Official usage: JobPosting and BroadcastEvent pages only
  * - Using for other content types may result in API access revocation
  */
-import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 import { db } from '../db/index.js';
 import { serviceKeys } from '../db/schema.js';
-import { eq, asc, and } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { decrypt } from '../lib/crypto.js';
 
 const INDEXING_API_ENDPOINT = 'https://indexing.googleapis.com/v3/urlNotifications:publish';

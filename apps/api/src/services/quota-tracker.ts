@@ -50,7 +50,7 @@ export async function initializeQuotaReset(): Promise<void> {
  */
 export async function resetAllDailyQuotas(): Promise<void> {
   try {
-    const result = await db
+    await db
       .update(serviceKeys)
       .set({ 
         dailyUsed: 0,

@@ -8,7 +8,7 @@ import rateLimit from '@fastify/rate-limit';
 import { config } from './lib/config.js';
 import { closeDatabase } from './db/index.js';
 import { closeQueueManager } from './services/queue-manager.js';
-import { closeQuotaTracker, initializeQuotaReset, resetAllDailyQuotas } from './services/quota-tracker.js';
+import { closeQuotaTracker, initializeQuotaReset } from './services/quota-tracker.js';
 
 // Import routes
 import submitRoutes from './routes/submit.js';
@@ -40,7 +40,7 @@ async function buildServer() {
   await fastify.register(rateLimit, {
     max: 100,
     timeWindow: '1 minute',
-    errorResponseBuilder: (request, context) => ({
+    errorResponseBuilder: (_request, context) => ({
       error: 'Rate limit exceeded',
       message: 'Too many requests. Please try again later.',
       retryAfter: context.after,
@@ -67,12 +67,12 @@ async function buildServer() {
   });
   
   // Global error handler
-  fastify.setErrorHandler((error, request, reply) => {
+  fastify.setErrorHandler((error, _request, reply) => {
     fastify.log.error(error);
     
-    reply.code(error.statusCode || 500).send({
-      error: error.name || 'Internal Server Error',
-      message: error.message || 'Something went wrong',
+    reply.code((error as any).statusCode || 500).send({
+      error: (error as any).name || 'Internal Server Error',
+      message: (error as Error).message || 'Something went wrong',
     });
   });
   
@@ -108,7 +108,7 @@ async function start() {
     `);
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('❌ Failed to start server:', error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }
